@@ -1,58 +1,18 @@
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
-const bodyParser = require('body-parser'); 
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import gameRoute from './src/routes/games.route.js'
+
+dotenv.config();
 
 const app = express();
-const port = 3005;
+const port = process.env.PORT || 5700;
 
 app.use(bodyParser.json());
 app.use(cors());
 
-let searchedData = [];
-
-app.get('/', (req, res) => {
-  res.send('Servidor está rodando.');
-});
-
-app.post('/games', async (req, res) => {
-  try {
-    const clientId = "ilt59r1k367kepww23p20rn90n0npb";
-    const clientSecret = "hj0z6g2ze8o9q1zg6d2818y1vq5p50";
-
-    const { search } = req.body;
-
-    // Obtém o token de acesso
-    const authUrl = `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`;
-    const authResponse = await axios.post(authUrl);
-    const token = authResponse.data.access_token;
-
-    // Faz a solicitação à API IGDB com o token de acesso e o termo de pesquisa
-    const igdbUrl = "https://api.igdb.com/v4/games";
-    const igdbResponse = await axios.get(igdbUrl, {
-      params: {
-        fields: "name, genres.name, cover.*",
-        search: search,
-        limit: 100,
-      },
-      headers: {
-        'Client-ID': clientId,
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    searchedData = igdbResponse.data;
-
-    res.json(igdbResponse.data);
-  } catch (error) {
-    console.error('Erro na solicitação à API externa:', error);
-    res.status(500).send('Erro interno do servidor');
-  }
-});
-
-app.get('/games', (req, res) => {
-  res.json(searchedData);
-});
+app.use(gameRoute)
 
 app.listen(port, () => {
   console.log(`Servidor está rodando em http://localhost:${port}`);
