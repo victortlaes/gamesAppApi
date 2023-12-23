@@ -1,0 +1,7 @@
+# Arquivos temporários
+*.log
+*.tmp
+
+# Diretórios a serem ignorados
+node_modules/
+dist/
